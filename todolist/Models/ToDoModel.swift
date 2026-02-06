@@ -5,9 +5,9 @@ struct Todo: Identifiable{
     let title: String
     var isCompleted: Bool
     
-    init(title: String, isCompleted: Bool) {
+    init(title: String) {
         self.id = UUID()
         self.title = title
-        self.isCompleted = isCompleted
+        self.isCompleted = false
     }
 }

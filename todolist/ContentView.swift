@@ -4,8 +4,8 @@ struct ContentView: View {
     @State var newTitle: String = ""
     @State var showAddModalWindow: Bool = false
     @State var todos:[Todo] = [
-        Todo(title: "test", isCompleted: false),
-        Todo(title: "test 2", isCompleted: false)
+        Todo(title: "test"),
+        Todo(title: "test 2")
     ]
     var complitedTodos: [Todo] {
         todos.filter{$0.isCompleted}
