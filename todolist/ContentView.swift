@@ -1,50 +1,19 @@
 import SwiftUI
 
 struct ContentView: View {
-    private let todosKey = "todos_key"
+    
+    @ObservedObject private var viewmodel = ToDoViewModel()
+    
     @State private var selectedDate = Date()
     @State private var newType: TodoType = .empty
     @State private var newTitle: String = ""
     @State private var newDescription: String = ""
     @State var showAddModalWindow: Bool = false
+    @State var showDescriptionWindow: Bool = false
     @State private var isComplitetsCollapsed: Bool = false
-    @State var todos:[Todo] = []
-    var complitedTodos: [Todo] { todos.filter{$0.isCompleted} }
-    var activeTodos: [Todo]{ todos.filter{!$0.isCompleted} }
     
-    func saveTodos(){
-        if let data = try? JSONEncoder().encode(todos){
-            UserDefaults.standard.set(data, forKey: todosKey)
-        }
-    }
-    
-    func loadTodos(){
-        guard let data = UserDefaults.standard.data(forKey: todosKey),
-              let savedTodos = try? JSONDecoder().decode([Todo].self, from: data)
-        else { return }
-        
-        todos = savedTodos
-    }
-    
-    func toggle(_ todo:Todo){
-        if let index = todos.firstIndex(where: {$0.id == todo.id}){
-            withAnimation{
-                todos[index].isCompleted.toggle()
-            }
-        }
-    }
-    
-    func delete(_ todo:Todo){
-        withAnimation{
-            todos.removeAll{$0.id == todo.id}
-        }
-    }
-    
-    func clearAll(_ todos: [Todo]){
-        for todo in todos{
-            delete(todo)
-        }
-    }
+    var complitedTodos: [Todo] { viewmodel.todos.filter{$0.isCompleted} }
+    var activeTodos: [Todo]{ viewmodel.todos.filter{!$0.isCompleted} }
     
     var completedHeader: some View{
         HStack{
@@ -79,11 +48,11 @@ struct ContentView: View {
                                 Spacer()
                             }
                             .onTapGesture {
-                                toggle(todo)
+                                viewmodel.toggle(todo)
                             }
                             .swipeActions{
                                 Button(role: .destructive){
-                                    delete(todo)
+                                    viewmodel.delete(todo)
                                 }label:{
                                     Label("Delete",systemImage:"trash")
                                 }
@@ -108,11 +77,11 @@ struct ContentView: View {
                                     .strikethrough()
                             }
                             .onTapGesture {
-                                toggle(todo)
+                                viewmodel.toggle(todo)
                             }
                             .swipeActions{
                                 Button(role: .destructive){
-                                    delete(todo)
+                                    viewmodel.delete(todo)
                                 }label:{
                                     Label("Удалить",systemImage:"trash")
                                 }
@@ -121,7 +90,7 @@ struct ContentView: View {
                         Section{
                             if !complitedTodos.isEmpty{
                                 Button(){
-                                    clearAll(complitedTodos)
+                                    viewmodel.clearAll(complitedTodos)
                                 }label:{
                                     Label("Удалить все",systemImage:"trash")
                                 }
@@ -186,7 +155,7 @@ struct ContentView: View {
                             
                             let newTodo = Todo(title: newTitle)
                             //let newTodo = Todo(title: newTitle, date: selectedDate, type: newType)
-                            todos.append(newTodo)
+                            viewmodel.todos.append(newTodo)
                             newTitle = ""
                             newType = .empty
                             
@@ -198,10 +167,10 @@ struct ContentView: View {
             }
         }
         .onAppear{
-            loadTodos()
+            viewmodel.loadTodos()
         }
-        .onChange(of: todos){
-            saveTodos()
+        .onChange(of: viewmodel.todos){
+            viewmodel.saveTodos()
         }
     }
 }
