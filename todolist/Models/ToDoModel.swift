@@ -1,6 +1,6 @@
 import Foundation
 
-struct Todo: Identifiable{
+struct Todo: Identifiable, Codable, Equatable{
     let id: UUID
     let title: String
     var isCompleted: Bool

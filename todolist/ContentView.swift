@@ -1,16 +1,27 @@
 import SwiftUI
 
 struct ContentView: View {
+    private let todosKey = "todos_key"
     @State var newTitle: String = ""
     @State var showAddModalWindow: Bool = false
     @State private var isComplitetsCollapsed: Bool = false
-    @State var todos:[Todo] = [
-        Todo(title: "test"),
-        Todo(title: "test"),
-        Todo(title: "test 2")
-    ]
+    @State var todos:[Todo] = []
     var complitedTodos: [Todo] { todos.filter{$0.isCompleted} }
     var activeTodos: [Todo]{ todos.filter{!$0.isCompleted} }
+    
+    func saveTodos(){
+        if let data = try? JSONEncoder().encode(todos){
+            UserDefaults.standard.set(data, forKey: todosKey)
+        }
+    }
+    
+    func loadTodos(){
+        guard let data = UserDefaults.standard.data(forKey: todosKey),
+              let savedTodos = try? JSONDecoder().decode([Todo].self, from: data)
+        else { return }
+        
+        todos = savedTodos
+    }
     
     func toggle(_ todo:Todo){
         if let index = todos.firstIndex(where: {$0.id == todo.id}){
@@ -53,15 +64,9 @@ struct ContentView: View {
                 Section(){
                     if activeTodos.isEmpty{
                         VStack{
-                            Text("Нет активных задач")
+                            Text("Пока нет активных задач")
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .foregroundColor(.secondary)
-                            Button{
-                                showAddModalWindow = true
-                            } label:{
-                                Label("Cоздать задачу", systemImage: "plus")
-                                    .foregroundStyle(.black)
-                            }
                         }
                     }else{
                         ForEach(activeTodos){ todo in
@@ -83,7 +88,6 @@ struct ContentView: View {
                         }
                     }
                 }
-                
                 Section(header: completedHeader){
                     if !isComplitetsCollapsed{
                         if complitedTodos.isEmpty{
@@ -156,6 +160,12 @@ struct ContentView: View {
                 }
                 .padding()
             }
+        }
+        .onAppear{
+            loadTodos()
+        }
+        .onChange(of: todos){
+            saveTodos()
         }
     }
 }
