@@ -2,7 +2,10 @@ import SwiftUI
 
 struct ContentView: View {
     private let todosKey = "todos_key"
-    @State var newTitle: String = ""
+    @State private var selectedDate = Date()
+    @State private var newType: TodoType = .empty
+    @State private var newTitle: String = ""
+    @State private var newDescription: String = ""
     @State var showAddModalWindow: Bool = false
     @State private var isComplitetsCollapsed: Bool = false
     @State var todos:[Todo] = []
@@ -64,7 +67,7 @@ struct ContentView: View {
                 Section(){
                     if activeTodos.isEmpty{
                         VStack{
-                            Text("Пока нет активных задач")
+                            Text("Пока активных задач нет")
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .foregroundColor(.secondary)
                         }
@@ -137,28 +140,61 @@ struct ContentView: View {
                 } label:{
                     Image(systemName: "plus")
                 }
+                .glassEffect()
             }
             
             .sheet(isPresented: $showAddModalWindow){
-                VStack(spacing: 15){
-                    Text("New Task")
-                        .font(.headline)
-                    TextField("Entry task title", text: $newTitle)
-                        .textFieldStyle(.roundedBorder)
-                    Button("Add"){
-                        guard !newTitle.isEmpty else { return }
-                        
-                        let newTodo = Todo(title: newTitle)
-                        todos.append(newTodo)
-                        
-                        newTitle = ""
+                HStack(alignment: .center){
+                    Text("Новая задача")
+                        .font(.title)
+                        .fontWeight(.bold)
+                    Spacer()
+                    Button{
                         showAddModalWindow = false
+                    } label:{
+                        Image(systemName: "chevron.down")
+                            .font(.system(size: 20))
+                            .padding(10)
                     }
-                    Button("Cancel"){
-                        showAddModalWindow = false
+                    .foregroundColor(.red)
+                    .glassEffect()
+
+                }
+                .padding(EdgeInsets(top: 20, leading: 20, bottom: 10,trailing: 20))
+                VStack{
+                    List{
+                        DatePicker(
+                            "Выберете время и дату",
+                            selection: $selectedDate,
+                            displayedComponents: [.date,.hourAndMinute]
+                        )
+                        .datePickerStyle(.wheel)
+                        Section{
+                            TextField("Что нужно сдлеать?", text: $newTitle)
+                            TextField("Описание", text: $newDescription)
+                                .padding(EdgeInsets(top:0,leading:0,bottom:50,trailing:0))
+                        }
+                        Picker("Выберете тег", selection: $newType){
+                            Text("Жизнь").tag(TodoType.life)
+                            Text("Работа").tag(TodoType.work)
+                            Text("Саморазвите").tag(TodoType.personal)
+                        }
+                    }
+                    HStack(alignment: .bottom){
+                        Button("Создать"){
+                            guard !newTitle.isEmpty else {return}
+                            
+                            let newTodo = Todo(title: newTitle)
+                            //let newTodo = Todo(title: newTitle, date: selectedDate, type: newType)
+                            todos.append(newTodo)
+                            newTitle = ""
+                            newType = .empty
+                            
+                            showAddModalWindow = false
+                        }
+                        .padding(12)
                     }
                 }
-                .padding()
             }
         }
         .onAppear{
