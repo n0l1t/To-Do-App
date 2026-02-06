@@ -1,10 +1,3 @@
-//
-//  todolistApp.swift
-//  todolist
-//
-//  Created by Максим Фурсов on 2/4/26.
-//
-
 import SwiftUI
 
 @main
