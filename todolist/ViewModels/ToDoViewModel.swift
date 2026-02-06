@@ -11,6 +11,9 @@ final class ToDoViewModel: ObservableObject{
         setupAutosave()
     }
     
+    var complitedTodos: [Todo] { todos.filter{$0.isCompleted} }
+    var activeTodos: [Todo]{ todos.filter{!$0.isCompleted} }
+    
     func toggle(_ todo:Todo){
         if let index = todos.firstIndex(where: {$0.id == todo.id}){
                 todos[index].isCompleted.toggle()

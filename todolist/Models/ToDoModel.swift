@@ -9,15 +9,15 @@ struct Todo: Identifiable, Codable, Equatable{
     let title: String
     var isCompleted: Bool
     let type: TodoType
-    //let descrtiption: String
+    let detail: String
     let date: Date
     
-    init(title: String) {
+    init(title: String, detail:String) {
         self.id = UUID()
         self.title = title
         self.isCompleted = false
         self.type = .life
         self.date = Date()
-        //self.descrtiption = "test descrtiopton"
+        self.detail = detail
     }
 }

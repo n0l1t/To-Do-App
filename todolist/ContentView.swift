@@ -1,5 +1,45 @@
 import SwiftUI
 
+struct TodoRowView: View{
+    let todo: Todo
+    let onToggle: () -> Void
+    let onDelete: () -> Void
+    
+    var body: some View{
+        HStack{
+            Image(systemName: "circle")
+            VStack(alignment: .leading){
+                if !todo.isCompleted{
+                    Text(todo.title)
+                        .font(.headline)
+                }else{
+                    Text(todo.title)
+                        .foregroundStyle(.gray)
+                        .strikethrough()
+                }
+                if !todo.detail.isEmpty && !todo.isCompleted{
+                    Text(todo.detail)
+                        .foregroundStyle(.secondary)
+                        .font(.caption2)
+                }
+            }
+            Spacer()
+        }
+        .onTapGesture {
+            withAnimation{
+                onToggle()
+            }
+        }
+        .swipeActions{
+            Button(role: .destructive){
+                onDelete()
+            }label:{
+                Label("Delete",systemImage:"trash")
+            }
+        }
+    }
+}
+
 struct ContentView: View {
     
     @ObservedObject private var viewmodel = ToDoViewModel()
@@ -11,9 +51,7 @@ struct ContentView: View {
     @State var showAddModalWindow: Bool = false
     @State var showDescriptionWindow: Bool = false
     @State private var isComplitetsCollapsed: Bool = false
-    
-    var complitedTodos: [Todo] { viewmodel.todos.filter{$0.isCompleted} }
-    var activeTodos: [Todo]{ viewmodel.todos.filter{!$0.isCompleted} }
+    @State private var titleInputError: Bool = false
     
     var completedHeader: some View{
         HStack{
@@ -34,63 +72,34 @@ struct ContentView: View {
         NavigationStack{
             List{
                 Section(){
-                    if activeTodos.isEmpty{
+                    if viewmodel.activeTodos.isEmpty{
                         VStack{
                             Text("Пока активных задач нет")
                                 .frame(maxWidth: .infinity, alignment: .center)
                                 .foregroundColor(.secondary)
                         }
                     }else{
-                        ForEach(activeTodos){ todo in
-                            HStack{
-                                Image(systemName: "circle")
-                                Text(todo.title)
-                                Spacer()
-                            }
-                            .onTapGesture {
-                                viewmodel.toggle(todo)
-                            }
-                            .swipeActions{
-                                Button(role: .destructive){
-                                    viewmodel.delete(todo)
-                                }label:{
-                                    Label("Delete",systemImage:"trash")
-                                }
-                            }
+                        ForEach(viewmodel.activeTodos){ todo in
+                            TodoRowView(todo: todo,onToggle: {viewmodel.toggle(todo)}, onDelete: {viewmodel.delete(todo)})
                         }
                     }
                 }
                 Section(header: completedHeader){
                     if !isComplitetsCollapsed{
-                        if complitedTodos.isEmpty{
+                        if viewmodel.complitedTodos.isEmpty{
                             VStack{
                                 Text("Пока завершенных задач нет")
                                     .frame(maxWidth: .infinity, alignment: .center)
                                     .foregroundColor(.secondary)
                             }
                         }
-                        ForEach(complitedTodos) { todo in
-                            HStack{
-                                Image(systemName: "checkmark.circle.fill")
-                                Text(todo.title)
-                                    .foregroundStyle(.gray)
-                                    .strikethrough()
-                            }
-                            .onTapGesture {
-                                viewmodel.toggle(todo)
-                            }
-                            .swipeActions{
-                                Button(role: .destructive){
-                                    viewmodel.delete(todo)
-                                }label:{
-                                    Label("Удалить",systemImage:"trash")
-                                }
-                            }
+                        ForEach(viewmodel.complitedTodos) { todo in
+                            TodoRowView(todo: todo,onToggle: {viewmodel.toggle(todo)}, onDelete: {viewmodel.delete(todo)})
                         }
                         Section{
-                            if !complitedTodos.isEmpty{
+                            if !viewmodel.complitedTodos.isEmpty{
                                 Button(){
-                                    viewmodel.clearAll(complitedTodos)
+                                    viewmodel.clearAll(viewmodel.complitedTodos)
                                 }label:{
                                     Label("Удалить все",systemImage:"trash")
                                 }
@@ -151,15 +160,22 @@ struct ContentView: View {
                     }
                     HStack(alignment: .bottom){
                         Button("Создать"){
-                            guard !newTitle.isEmpty else {return}
-                            
-                            let newTodo = Todo(title: newTitle)
+                            guard !newTitle.isEmpty else {
+                                titleInputError = true
+                                return
+                            }
+                            let newTodo = Todo(title: newTitle, detail: newDescription)
                             //let newTodo = Todo(title: newTitle, date: selectedDate, type: newType)
                             viewmodel.todos.append(newTodo)
                             newTitle = ""
                             newType = .empty
                             
                             showAddModalWindow = false
+                        }
+                        .alert("Ошибка", isPresented: $titleInputError){
+                            Button("OK", role: .cancel){}
+                        } message: {
+                            Text("Задача не может быть пустой")
                         }
                         .padding(12)
                     }
