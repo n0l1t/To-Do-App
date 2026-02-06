@@ -106,7 +106,7 @@ struct ContentView: View {
                     Button("Add"){
                         guard !newTitle.isEmpty else { return }
                         
-                        let newTodo = Todo(title: newTitle, isCompleted: false)
+                        let newTodo = Todo(title: newTitle)
                         todos.append(newTodo)
                         
                         newTitle = ""
