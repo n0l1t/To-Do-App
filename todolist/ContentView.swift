@@ -3,32 +3,55 @@ import SwiftUI
 struct ContentView: View {
     @State var newTitle: String = ""
     @State var showAddModalWindow: Bool = false
+    @State private var isComplitetsCollapsed: Bool = false
     @State var todos:[Todo] = [
+        Todo(title: "test"),
         Todo(title: "test"),
         Todo(title: "test 2")
     ]
-    var complitedTodos: [Todo] {
-        todos.filter{$0.isCompleted}
-    }
-    var activeTodos: [Todo]{
-        todos.filter{!$0.isCompleted}
-    }
+    var complitedTodos: [Todo] { todos.filter{$0.isCompleted} }
+    var activeTodos: [Todo]{ todos.filter{!$0.isCompleted} }
     
     func toggle(_ todo:Todo){
         if let index = todos.firstIndex(where: {$0.id == todo.id}){
-            todos[index].isCompleted.toggle()
+            withAnimation{
+                todos[index].isCompleted.toggle()
+            }
         }
     }
     
     func delete(_ todo:Todo){
-        todos.removeAll{$0.id == todo.id}
+        withAnimation{
+            todos.removeAll{$0.id == todo.id}
+        }
+    }
+    
+    func clearAll(_ todos: [Todo]){
+        for todo in todos{
+            delete(todo)
+        }
+    }
+    
+    var completedHeader: some View{
+        HStack{
+            Text("Завершенные")
+                .font(.headline)
+            Spacer()
+            Image(systemName: isComplitetsCollapsed ? "chevron.up" : "chevron.down")
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            withAnimation{
+                isComplitetsCollapsed.toggle()
+            }
+        }
     }
     
     var body: some View {
         NavigationStack{
             List{
                 Section(){
-                    if activeTodos.count == 0{
+                    if activeTodos.isEmpty{
                         VStack{
                             Text("Нет активных задач")
                                 .frame(maxWidth: .infinity, alignment: .center)
@@ -36,10 +59,11 @@ struct ContentView: View {
                             Button{
                                 showAddModalWindow = true
                             } label:{
-                                Label("Cоздать", systemImage: "plus")
+                                Label("Cоздать задачу", systemImage: "plus")
+                                    .foregroundStyle(.black)
                             }
                         }
-                }else{
+                    }else{
                         ForEach(activeTodos){ todo in
                             HStack{
                                 Image(systemName: "circle")
@@ -60,12 +84,15 @@ struct ContentView: View {
                     }
                 }
                 
-                Section("Завершенные"){
-                    if complitedTodos.count == 0{
-                        Text("Пока нет выполненых задач")
-                            .frame(maxWidth: .infinity, alignment: .center)
-                            .foregroundColor(.secondary)
-                    }else{
+                Section(header: completedHeader){
+                    if !isComplitetsCollapsed{
+                        if complitedTodos.isEmpty{
+                            VStack{
+                                Text("Пока завершенных задач нет")
+                                    .frame(maxWidth: .infinity, alignment: .center)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
                         ForEach(complitedTodos) { todo in
                             HStack{
                                 Image(systemName: "checkmark.circle.fill")
@@ -80,13 +107,24 @@ struct ContentView: View {
                                 Button(role: .destructive){
                                     delete(todo)
                                 }label:{
-                                    Label("Delete",systemImage:"trash")
+                                    Label("Удалить",systemImage:"trash")
                                 }
+                            }
+                        }
+                        Section{
+                            if !complitedTodos.isEmpty{
+                                Button(){
+                                    clearAll(complitedTodos)
+                                }label:{
+                                    Label("Удалить все",systemImage:"trash")
+                                }
+                                .frame(maxWidth: .infinity, alignment: .center)
+                                .foregroundColor(.secondary)
                             }
                         }
                     }
                 }
- 
+                
             }
             .navigationTitle("Мои задачи")
             .toolbar{
