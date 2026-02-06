@@ -1,5 +1,35 @@
 import SwiftUI
 
+struct TagView: View {
+    let todo: Todo
+    
+    var inside: some View{
+        Text(todo.type.title)
+            .font(.caption)
+            .foregroundColor(.white)
+            .padding(.horizontal, 8)
+            .padding(.vertical, 8)
+    }
+    
+    var body: some View {
+        switch todo.type{
+        case .life:
+            inside
+                .background(Capsule().fill(.teal).opacity(todo.isCompleted ? 0.2 : 0.8))
+        case .work:
+            inside
+                .background(Capsule().fill(.indigo).opacity(todo.isCompleted ? 0.2 : 0.8))
+        case .personal:
+            inside
+                .background(Capsule().fill(.orange).opacity(todo.isCompleted ? 0.2 : 0.8))
+        case .empty:
+            inside
+                .background(Capsule().fill(.gray).opacity(todo.isCompleted ? 0.2 : 0.8))
+        }
+        
+    }
+}
+
 struct TodoRowView: View{
     let todo: Todo
     let onToggle: () -> Void
@@ -24,6 +54,7 @@ struct TodoRowView: View{
                 }
             }
             Spacer()
+            TagView(todo: todo)
         }
         .onTapGesture {
             withAnimation{
@@ -48,6 +79,7 @@ struct ContentView: View {
     @State private var newType: TodoType = .empty
     @State private var newTitle: String = ""
     @State private var newDescription: String = ""
+    
     @State var showAddModalWindow: Bool = false
     @State var showDescriptionWindow: Bool = false
     @State private var isComplitetsCollapsed: Bool = false
@@ -164,7 +196,7 @@ struct ContentView: View {
                                 titleInputError = true
                                 return
                             }
-                            let newTodo = Todo(title: newTitle, detail: newDescription)
+                            let newTodo = Todo(title: newTitle, detail: newDescription, type: newType)
                             //let newTodo = Todo(title: newTitle, date: selectedDate, type: newType)
                             viewmodel.todos.append(newTodo)
                             newTitle = ""
