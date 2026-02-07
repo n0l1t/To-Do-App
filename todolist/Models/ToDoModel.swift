@@ -25,12 +25,12 @@ struct Todo: Identifiable, Codable, Equatable{
     let detail: String
     let date: Date
     
-    init(title: String, detail: String, type: TodoType) {
+    init(title: String, detail: String, type: TodoType, date: Date) {
         self.id = UUID()
         self.title = title
         self.isCompleted = false
         self.type = type
-        self.date = Date()
+        self.date = date
         self.detail = detail
     }
 }

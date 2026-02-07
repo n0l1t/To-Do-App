@@ -2,9 +2,10 @@ import SwiftUI
 
 struct CalendarView: View{
     @ObservedObject var viewmodel: ToDoViewModel
+
     var body: some View{
-        Text("calendar")
-            .navigationTitle("Calendar")
+        Text("Календарь")
+            .navigationTitle("Календарь")
     }
 }
 

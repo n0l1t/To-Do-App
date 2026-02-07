@@ -12,7 +12,7 @@ struct BottomBarView: View {
             }
             .tabItem {
                 Image(systemName: "list.bullet")
-                Text("Tasks")
+                Text("Задачи")
             }
 
             NavigationStack {
@@ -20,7 +20,7 @@ struct BottomBarView: View {
             }
             .tabItem {
                 Image(systemName: "calendar")
-                Text("Calendar")
+                Text("Календарь")
             }
 
             NavigationStack {
@@ -28,7 +28,7 @@ struct BottomBarView: View {
             }
             .tabItem {
                 Image(systemName: "gear")
-                Text("Settings")
+                Text("Настройки")
             }
         }
     }

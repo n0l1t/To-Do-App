@@ -1,5 +1,13 @@
 import SwiftUI
 
+extension Date{
+    var todoDisplay: String{
+        formatted(
+            .relative(presentation: .named)
+                .locale(Locale(identifier: "ru_RU")))
+    }
+}
+
 struct TagView: View {
     let todo: Todo
     
@@ -8,7 +16,7 @@ struct TagView: View {
             .font(.caption)
             .foregroundColor(.white)
             .padding(.horizontal, 8)
-            .padding(.vertical, 8)
+            .padding(.vertical, 5)
     }
     
     var body: some View {
@@ -51,10 +59,19 @@ struct TodoRowView: View{
                     Text(todo.detail)
                         .foregroundStyle(.secondary)
                         .font(.caption2)
+                    
                 }
             }
             Spacer()
-            TagView(todo: todo)
+            VStack(alignment: .center){
+                TagView(todo: todo)
+                if !todo.isCompleted{
+                    Text(todo.date.todoDisplay)
+                        .foregroundStyle(.secondary)
+                        .font(.caption2)
+                }
+            }
+            
         }
         .onTapGesture {
             withAnimation{
@@ -187,6 +204,7 @@ struct ToDoListView: View {
                         Text("Жизнь").tag(TodoType.life)
                         Text("Работа").tag(TodoType.work)
                         Text("Саморазвите").tag(TodoType.personal)
+                        Text("Без тега").tag(TodoType.empty)
                     }
                 }
                 HStack(alignment: .bottom){
@@ -195,7 +213,7 @@ struct ToDoListView: View {
                             titleInputError = true
                             return
                         }
-                        let newTodo = Todo(title: newTitle, detail: newDescription, type: newType)
+                        let newTodo = Todo(title: newTitle, detail: newDescription, type: newType, date:selectedDate)
                         viewmodel.todos.append(newTodo)
                         newTitle = ""
                         newType = .empty

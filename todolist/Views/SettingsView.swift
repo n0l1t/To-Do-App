@@ -3,8 +3,8 @@ import SwiftUI
 struct SettingsView: View{
     @ObservedObject var viewmodel: ToDoViewModel
     var body: some View{
-        Text("calendar")
-            .navigationTitle("Settings")
+        Text("Настройки")
+            .navigationTitle("Настройки")
         
     }
 }
