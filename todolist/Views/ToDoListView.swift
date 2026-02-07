@@ -63,7 +63,7 @@ struct TodoRowView: View{
                 }
             }
             Spacer()
-            VStack(alignment: .center){
+            VStack(alignment: .trailing){
                 TagView(todo: todo)
                 if !todo.isCompleted{
                     Text(todo.date.todoDisplay)
@@ -247,3 +247,5 @@ struct ToDoListView: View {
         )
     }
 }
+
+

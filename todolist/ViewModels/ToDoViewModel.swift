@@ -3,8 +3,11 @@ import Combine
 
 final class ToDoViewModel: ObservableObject{
     
+    @Published var selectedDate: Date = Date()
     @Published var todos: [Todo] = []
+    
     private let todosKey = "todos_key"
+    private let calendar = Calendar.current
     
     init() {
         loadTodos()
@@ -13,6 +16,28 @@ final class ToDoViewModel: ObservableObject{
     
     var complitedTodos: [Todo] { todos.filter{$0.isCompleted} }
     var activeTodos: [Todo]{ todos.filter{!$0.isCompleted} }
+    
+    private var selectedDay: Date {
+        calendar.startOfDay(for: selectedDate)
+    }
+    
+    var todosForSelectedDay: [Todo] {
+        todos.filter {
+            calendar.isDate($0.date, inSameDayAs: selectedDate)
+        }
+    }
+    
+    var todosByDay: [Date: [Todo]] {
+        Dictionary(
+            grouping: todos,
+            by: { calendar.startOfDay(for: $0.date) }
+        )
+    }
+    
+    var sortedDays: [Date] {
+        todosByDay.keys.sorted()
+    }
+    
     
     func toggle(_ todo:Todo){
         if let index = todos.firstIndex(where: {$0.id == todo.id}){
