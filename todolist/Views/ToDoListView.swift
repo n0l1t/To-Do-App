@@ -43,6 +43,12 @@ struct TodoRowView: View{
     let onToggle: () -> Void
     let onDelete: () -> Void
     
+    @AppStorage("isTagEnabled")
+    private var isTagEnabled: Bool = true
+    @AppStorage("isTimeEnabled")
+    private var isTimeEnabled: Bool = true
+    
+    
     var body: some View{
         HStack{
             Image(systemName: "circle")
@@ -64,8 +70,10 @@ struct TodoRowView: View{
             }
             Spacer()
             VStack(alignment: .trailing){
-                TagView(todo: todo)
-                if !todo.isCompleted{
+                if isTagEnabled{
+                    TagView(todo: todo)
+                }
+                if !todo.isCompleted && isTimeEnabled{
                     Text(todo.date.todoDisplay)
                         .foregroundStyle(.secondary)
                         .font(.caption2)
@@ -133,7 +141,7 @@ struct ToDoListView: View {
                 }
             }
             Section(header: completedHeader){
-                if !isComplitetsCollapsed{
+                if isComplitetsCollapsed{
                     if viewmodel.complitedTodos.isEmpty{
                         VStack{
                             Text("Пока завершенных задач нет")
@@ -160,13 +168,20 @@ struct ToDoListView: View {
         }
         .navigationTitle("Мои задачи")
         .toolbar {
-            ToolbarItemGroup(placement: .navigationBarTrailing) {
+            ToolbarItem(placement: .navigationBarTrailing) {
                 Button {
                     showAddModalWindow = true
                 } label: {
                     Image(systemName: "plus")
                 }
             }
+//            ToolbarItem(placement: .principal){
+//                Text("Мои задачи")
+//                    .font(.headline)
+//                    .padding(.horizontal, 15)
+//                    .padding(.vertical, 13)
+//                    .background(Capsule().fill(.white))
+//            }
         }
         
         .sheet(isPresented: $showAddModalWindow){
@@ -214,7 +229,7 @@ struct ToDoListView: View {
                             return
                         }
                         let newTodo = Todo(title: newTitle, detail: newDescription, type: newType, date:selectedDate)
-                        viewmodel.todos.append(newTodo)
+                        viewmodel.add(todo: newTodo)
                         newTitle = ""
                         newType = .empty
                         

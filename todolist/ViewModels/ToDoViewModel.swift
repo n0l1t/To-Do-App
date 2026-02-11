@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import UserNotifications
 
 final class ToDoViewModel: ObservableObject{
     
@@ -9,13 +10,13 @@ final class ToDoViewModel: ObservableObject{
     private let todosKey = "todos_key"
     private let calendar = Calendar.current
     
+    var complitedTodos: [Todo] { todos.filter{$0.isCompleted} }
+    var activeTodos: [Todo]{ todos.filter{!$0.isCompleted} }
+    
     init() {
         loadTodos()
         setupAutosave()
     }
-    
-    var complitedTodos: [Todo] { todos.filter{$0.isCompleted} }
-    var activeTodos: [Todo]{ todos.filter{!$0.isCompleted} }
     
     private var selectedDay: Date {
         calendar.startOfDay(for: selectedDate)
@@ -37,7 +38,23 @@ final class ToDoViewModel: ObservableObject{
     var sortedDays: [Date] {
         todosByDay.keys.sorted()
     }
+
+    // Действия с задачей
+
+    func add(todo: Todo){
+        todos.append(todo)
+        
+        NotificationManager.shared.scheduleNotification(
+            id: todo.id.uuidString,
+            title: "Напоминание",
+            body: todo.title,
+            date: todo.date,
+            hoursBefore: 1)
+    }
     
+    func update(_ todo: Todo){
+        //placeholder функиця для редактирования задач
+    }
     
     func toggle(_ todo:Todo){
         if let index = todos.firstIndex(where: {$0.id == todo.id}){
@@ -46,7 +63,11 @@ final class ToDoViewModel: ObservableObject{
     }
     
     func delete(_ todo:Todo){
-            todos.removeAll{$0.id == todo.id}
+        NotificationManager.shared.removeNotification(
+            id: todo.id.uuidString
+        )
+        
+        todos.removeAll{$0.id == todo.id}
     }
     
     func clearAll(_ todos: [Todo]){
@@ -54,6 +75,9 @@ final class ToDoViewModel: ObservableObject{
             delete(todo)
         }
     }
+    
+    //
+    
     func saveTodos(){
         if let data = try? JSONEncoder().encode(todos){
             UserDefaults.standard.set(data, forKey: todosKey)
